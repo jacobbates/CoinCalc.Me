@@ -196,7 +196,6 @@ function updateCalc() {
   $( "#sell_total" ).val('$'+sell_total.toFixed(2));
   $( "#value_change" ).val(value_change.toFixed(2)+'%');
   $( "#profit_loss" ).val('$'+profit_loss.toFixed(2));
-  $( "#sell_price" ).val(parseFloat(sell_price.toFixed(6)));
 
   updateURL();
 
@@ -209,12 +208,14 @@ $('.estimator').on('keyup input change', 'input[type=number], #coin_name', funct
 
 function updateURL() {
   //Update URL Function
-  var buy_amount  = $( "#buy_amount" ).val();
-  var buy_price   = $( "#buy_price" ).val();
-  var buy_fees    = $( "#buy_fees" ).val();
-  var sell_price   = $( "#sell_price" ).val();
-  var sell_fees    = $( "#sell_fees" ).val();
+  var buy_amount  = $( "#buy_amount" ).val()*1;
+  var buy_price   = $( "#buy_price" ).val()*1;
+  var buy_fees    = $( "#buy_fees" ).val()*1;
+  var sell_price   = $( "#sell_price" ).val()*1;
+  var sell_fees    = $( "#sell_fees" ).val()*1;
   var coin_name    = $( "#coin_name" ).val();
+  buy_price = parseFloat(buy_price.toFixed(6)); //limit buy_price decimal in URL to 6
+  sell_price = parseFloat(sell_price.toFixed(6)); //limit sell_price decimal in URL to 6
   var save_url = 'https://coincalc.me/?'+'c='+encodeURIComponent(coin_name)+'&a='+buy_amount+'&bp='+buy_price+'&bf='+buy_fees+'&sp='+sell_price+'&sf='+sell_fees;
   $( "#save_url" ).val(save_url);
 }
