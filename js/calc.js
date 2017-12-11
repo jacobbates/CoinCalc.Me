@@ -1,5 +1,5 @@
 /*
-  © CoinCalc.Me | v1.1 | https://github.com/jacobbates/CoinCalc.Me
+  © CoinCalc.Me | v1.2 | https://github.com/jacobbates/CoinCalc.Me
 */
 
 $( document ).ready(function() {
@@ -42,6 +42,28 @@ $( document ).ready(function() {
     $( "#sell_fees" ).val(sell_fees);
   }
 
+  //Check URL for auto-fetch
+  var fetch_auto = $.urlParam('af');
+  var fetch_ticker = decodeURIComponent($.urlParam('t'));
+  var fetch_fiat = decodeURIComponent($.urlParam('f'));
+  if (fetch_auto == 1 && fetch_ticker.length >= 1 && fetch_ticker.length <= 5){
+
+    //Update fetch fields
+    $('#fetch_auto').prop('checked', true);
+    $('#fetch_ticker').val(fetch_ticker);
+
+    //Check currency
+    var currency = "USD";
+    if (fetch_fiat.length = 3){
+      currency = fetch_fiat;
+      $('#fetch_fiat').val(currency);
+    }
+
+    autoFetch(currency,fetch_ticker);
+    updateURL();
+
+  }
+
   //Initial Calc Update
   updateCalc();
 
@@ -71,8 +93,59 @@ $( document ).ready(function() {
     setTooltip(e.trigger, 'Failed!');
     hideTooltip(e.trigger);
   });
+
+  // Initiate fetch_auto checkbox click
+  $('#fetch_auto').click(function() {
+    updateURL();
+  });
+
+  // Initiate fetch_auto update button click
+  $('#fetch_update').click(function() {
+
+    if ($('#fetch_auto').prop('checked')) {
+    //If auto-fetch enabled
+      var fetch_auto = 1;
+      var fetch_ticker = $('#fetch_ticker').val();
+      var currency = $('#fetch_fiat').val();
+      
+      autoFetch(currency,fetch_ticker);
+
+    }
+
+  });
   
 });
+
+function autoFetch(currency,fetch_ticker) {
+
+  //Fetch from coinmarketcap.com API
+  var fetch_price = 0;
+  $.get("https://api.coinmarketcap.com/v1/ticker/?convert="+currency, function(data, status) {
+    for (var i = 0; i < data.length - 1; i++) {
+      if (data[i].symbol == fetch_ticker) {
+        fetch_name = data[i].name;
+        fetch_price = data[i].price_usd;
+        
+        if(currency=="AUD"){
+          fetch_price = data[i].price_aud;
+        }else if(currency=="EUR"){
+          fetch_price = data[i].price_eur;
+        }else if(currency=="CAD"){
+          fetch_price = data[i].price_cad;
+        }
+
+        //Update name & sell_price
+        $("#coin_name").val(fetch_name);
+        $("#sell_price").val(parseFloat(fetch_price));
+        
+        //Recalc
+        updateCalc();
+
+      }
+    }
+  });
+
+}
 
 $("#calc_method").on('change', function(){
   //Determine Input Method Selected for Calculation
@@ -206,16 +279,31 @@ $('.estimator').on('keyup input change', 'input[type=number], #coin_name', funct
   updateCalc();
 });
 
+$('#configModal').on('keyup input change', 'input, select', function(){
+  //Bind inputs to autoUpdate Function
+  updateURL();
+});
+
 function updateURL() {
   //Update URL Function
   var buy_amount  = $( "#buy_amount" ).val()*1;
   var buy_price   = $( "#buy_price" ).val()*1;
   var buy_fees    = $( "#buy_fees" ).val()*1;
-  var sell_price   = $( "#sell_price" ).val()*1;
-  var sell_fees    = $( "#sell_fees" ).val()*1;
-  var coin_name    = $( "#coin_name" ).val();
+  var sell_price  = $( "#sell_price" ).val()*1;
+  var sell_fees   = $( "#sell_fees" ).val()*1;
+  var coin_name   = encodeURIComponent($( "#coin_name" ).val());
+
   buy_price = parseFloat(buy_price.toFixed(6)); //limit buy_price decimal in URL to 6
   sell_price = parseFloat(sell_price.toFixed(6)); //limit sell_price decimal in URL to 6
-  var save_url = 'https://coincalc.me/?'+'c='+encodeURIComponent(coin_name)+'&a='+buy_amount+'&bp='+buy_price+'&bf='+buy_fees+'&sp='+sell_price+'&sf='+sell_fees;
+  var save_url = 'https://coincalc.me/?'+'c='+coin_name+'&a='+buy_amount+'&bp='+buy_price+'&bf='+buy_fees+'&sp='+sell_price+'&sf='+sell_fees;
+  
+  if ($('#fetch_auto').prop('checked')) {
+    //If auto-fetch enabled
+    var fetch_auto = 1;
+    var fetch_ticker = encodeURIComponent($('#fetch_ticker').val());
+    var fetch_fiat = encodeURIComponent($('#fetch_fiat').val());
+    save_url = save_url+'&af='+fetch_auto+'&t='+fetch_ticker+'&f='+fetch_fiat;
+  }
+
   $( "#save_url" ).val(save_url);
 }
