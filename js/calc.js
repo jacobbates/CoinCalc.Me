@@ -1,5 +1,5 @@
 /*
-  © CoinCalc.Me | v1.0 | https://github.com/jacobbates/CoinCalc.Me
+  © CoinCalc.Me | v1.1 | https://github.com/jacobbates/CoinCalc.Me
 */
 
 $( document ).ready(function() {
@@ -78,18 +78,60 @@ $("#calc_method").on('change', function(){
   //Determine Input Method Selected for Calculation
   var calc_method = $( "#calc_method" ).val();
   if (calc_method == "Amount+Price"){
-    $( "#buy_amount" ).addClass( "bg-yellow" );
-    $( "#buy_amount" ).prop('disabled', false);   
+
+    //rebuild buy_amount enabled
+    var buy_amount   = $( "#buy_amount" ).val()*1;
+    $( "#buy_amount" ).remove();
+    $('.buy-amount').append('<input id="buy_amount" class="form-control bg-yellow" type="number" value="'+parseFloat(buy_amount.toFixed(6))+'">');
+
+    //rebuild buy_total disabled
     var buy_total   = $( "#buy_total" ).val()*1;
     $( "#buy_total" ).remove();
     $('.buy-total').append('<input id="buy_total" class="form-control" type="input" value="$'+buy_total.toFixed(2)+'" disabled>');
+  
+    //rebuild buy_price enabled
+    var buy_price   = $( "#buy_price" ).val().replace('$','');
+    buy_price = buy_price*1;
+    $( "#buy_price" ).remove();
+    $('.buy-price').append('<input id="buy_price" class="form-control bg-yellow" type="number" value="'+parseFloat(buy_price.toFixed(6))+'">');
+
   } else if (calc_method == "Price+Total") {
-    $( "#buy_amount" ).removeClass( "bg-yellow" );
-    $( "#buy_amount" ).prop('disabled', true);
+
+    //rebuild buy_amount disabled
+    var buy_amount   = $( "#buy_amount" ).val()*1;
+    $( "#buy_amount" ).remove();
+    $('.buy-amount').append('<input id="buy_amount" class="form-control" type="number" value="'+parseFloat(buy_amount.toFixed(6))+'" disabled>');
+
+    //rebuild buy_total enabled
     var buy_total   = $( "#buy_total" ).val().replace('$','');
     buy_total = buy_total*1;
     $( "#buy_total" ).remove();
     $('.buy-total').append('<input id="buy_total" class="form-control bg-yellow" type="number" value="'+buy_total.toFixed(2)+'">');
+  
+    //rebuild buy_price enabled
+    var buy_price   = $( "#buy_price" ).val().replace('$','');
+    buy_price = buy_price*1;
+    $( "#buy_price" ).remove();
+    $('.buy-price').append('<input id="buy_price" class="form-control bg-yellow" type="number" value="'+parseFloat(buy_price.toFixed(6))+'">');
+
+  } else if (calc_method == "Amount+Total") {
+
+    //rebuild buy_amount enabled
+    var buy_amount   = $( "#buy_amount" ).val()*1;
+    $( "#buy_amount" ).remove();
+    $('.buy-amount').append('<input id="buy_amount" class="form-control bg-yellow" type="number" value="'+parseFloat(buy_amount.toFixed(6))+'">');
+
+    //rebuild buy_total enabled
+    var buy_total   = $( "#buy_total" ).val().replace('$','');
+    buy_total = buy_total*1;
+    $( "#buy_total" ).remove();
+    $('.buy-total').append('<input id="buy_total" class="form-control bg-yellow" type="number" value="'+buy_total.toFixed(2)+'">');
+  
+    //rebuild buy_price disabled
+    var buy_price   = $( "#buy_price" ).val()*1;
+    $( "#buy_price" ).remove();
+    $('.buy-price').append('<input id="buy_price" class="form-control" type="input" value="$'+parseFloat(buy_price.toFixed(6))+'" disabled>');
+  
   }
 });
 
@@ -99,13 +141,13 @@ function updateCalc() {
 
   var calc_method = $( "#calc_method" ).val();
 
-  var buy_price   = $( "#buy_price" ).val()*1;
   var buy_fees    = $( "#buy_fees" ).val()*1;
-  var buy_amount, buy_value, buy_txcost, buy_total = 0;
+  var buy_amount, buy_price, buy_value, buy_txcost, buy_total = 0;
 
   if (calc_method == "Amount+Price"){
 
     buy_amount  = $( "#buy_amount" ).val()*1;
+    buy_price   = $( "#buy_price" ).val()*1;
     buy_value   = buy_amount*buy_price;
     buy_txcost  = buy_value*(buy_fees/100);
     buy_total   = buy_value+buy_txcost;
@@ -117,9 +159,20 @@ function updateCalc() {
     buy_total   = $( "#buy_total" ).val()*1;
     buy_value   = buy_total/(1+(buy_fees/100));
     buy_txcost  = buy_total-buy_value;
+    buy_price   = $( "#buy_price" ).val()*1;
     buy_amount  = buy_value/buy_price;
 
     $( "#buy_amount" ).val(parseFloat(buy_amount.toFixed(6)));
+
+  } else if (calc_method == "Amount+Total") {
+
+    buy_total   = $( "#buy_total" ).val()*1;
+    buy_value   = buy_total/(1+(buy_fees/100));
+    buy_txcost  = buy_total-buy_value;
+    buy_amount  = $( "#buy_amount" ).val()*1;
+    buy_price   = buy_value/buy_amount;
+
+    $( "#buy_price" ).val('$'+parseFloat(buy_price.toFixed(6)));
 
   }
 
@@ -143,7 +196,6 @@ function updateCalc() {
   $( "#sell_total" ).val('$'+sell_total.toFixed(2));
   $( "#value_change" ).val(value_change.toFixed(2)+'%');
   $( "#profit_loss" ).val('$'+profit_loss.toFixed(2));
-  $( "#buy_price" ).val(parseFloat(buy_price.toFixed(6)));
   $( "#sell_price" ).val(parseFloat(sell_price.toFixed(6)));
 
   updateURL();
