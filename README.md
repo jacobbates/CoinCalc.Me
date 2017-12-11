@@ -4,7 +4,7 @@ Cryptocurrency BUY vs SELL Profit/Loss Estimator
 
 [https://coincalc.me](https://coincalc.me)
 
-Version 1.0
+Version 1.1
 
 [![Screenshot](https://coincalc.me/img/screenshot.jpg)](https://coincalc.me)
 
